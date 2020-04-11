@@ -266,7 +266,10 @@ Voltage_Swing_Retry:
 	displayport_info("Voltage_Swing_Retry %02x %02x %02x %02x\n", val[0], val[1], val[2], val[3]);
 	displayport_reg_dpcd_write_burst(DPCD_ADD_TRANING_LANE0_SET, 4, val);
 
-	udelay((training_aux_rd_interval*4000)+400);
+	if (training_aux_rd_interval != 0)
+		mdelay(training_aux_rd_interval * 4);
+	else
+		udelay(100);
 
 	lane_cr_done = 0;
 
@@ -394,7 +397,10 @@ EQ_Training_Retry:
 	lane_symbol_locked_done = 0;
 	interlane_align_done = 0;
 
-	udelay((training_aux_rd_interval*4000)+400);
+	if (training_aux_rd_interval != 0)
+		mdelay(training_aux_rd_interval * 4);
+	else
+		udelay(100);
 
 	displayport_reg_dpcd_read_burst(DPCD_ADD_LANE0_1_STATUS, 3, val);
 	lane_cr_done |= ((val[0] & LANE0_CR_DONE) >> 0);
