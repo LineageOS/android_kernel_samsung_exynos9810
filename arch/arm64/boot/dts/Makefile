@@ -1,4 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0
+dtb-$(CONFIG_CAMERA_CROWN) += exynos/exynos9810-crownlte_eur_open_25.dtb
+dtb-$(CONFIG_CAMERA_CROWN) += exynos/exynos9810-crownlte_eur_open_26.dtb
+dtb-$(CONFIG_CAMERA_CROWN) += exynos/exynos9810-crownlte_eur_open_18.dtb
+dtb-$(CONFIG_CAMERA_CROWN) += exynos/exynos9810-crownlte_eur_open_19.dtb
+dtb-$(CONFIG_CAMERA_CROWN) += exynos/exynos9810-crownlte_eur_open_24.dtb
+dtb-$(CONFIG_CAMERA_CROWN) += exynos/exynos9810-crownlte_eur_open_23.dtb
+dtb-$(CONFIG_CAMERA_CROWN) += exynos/exynos9810-crownlte_eur_open_17.dtb
+dtb-$(CONFIG_CAMERA_CROWN) += exynos/exynos9810-crownlte_eur_open_21.dtb
+
 dtb-$(CONFIG_CAMERA_STAR2) += exynos/exynos9810-star2lte_eur_open_17.dtb
 dtb-$(CONFIG_CAMERA_STAR2) += exynos/exynos9810-star2lte_eur_open_16.dtb
 dtb-$(CONFIG_CAMERA_STAR2) += exynos/exynos9810-star2lte_eur_open_23.dtb
