@@ -745,6 +745,18 @@ tcp_challenge_ack_limit - INTEGER
 	in RFC 5961 (Improving TCP's Robustness to Blind In-Window Attacks)
 	Default: 100
 
+MPTCP variables:
+
+mptcp_enabled - INTEGER
+	Enable or disable Multipath TCP for new connections.
+	Possible values are:
+
+	0: Multipath TCP is disabled on all TCP-sockets that are newly created.
+	1: Multipath TCP is enabled by default on all new TCP-sockets. Note that
+	   existing sockets in LISTEN-state will still use regular TCP.
+	2: Enables Multipath TCP only upon the request of the application
+	   through the socket-option MPTCP_ENABLED.
+
 UDP variables:
 
 udp_mem - vector of 3 INTEGERs: min, pressure, max
@@ -891,12 +903,14 @@ icmp_ratelimit - INTEGER
 icmp_msgs_per_sec - INTEGER
 	Limit maximal number of ICMP packets sent per second from this host.
 	Only messages whose type matches icmp_ratemask (see below) are
-	controlled by this limit.
+	controlled by this limit. For security reasons, the precise count
+	of messages per second is randomized.
 	Default: 1000
 
 icmp_msgs_burst - INTEGER
 	icmp_msgs_per_sec controls number of ICMP packets sent per second,
 	while icmp_msgs_burst controls the burst size of these packets.
+	For security reasons, the precise burst size is randomized.
 	Default: 50
 
 icmp_ratemask - INTEGER
