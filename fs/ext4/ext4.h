@@ -394,11 +394,14 @@ struct flex_groups {
 #define EXT4_EXTENTS_FL			0x00080000 /* Inode uses extents */
 #define EXT4_EA_INODE_FL	        0x00200000 /* Inode used for large EA */
 #define EXT4_EOFBLOCKS_FL		0x00400000 /* Blocks allocated beyond EOF */
+#ifdef CONFIG_EXT4_DLP
+#define EXT4_DLP_FL				0x01000000 /* DLP file */
+#endif
 #define EXT4_INLINE_DATA_FL		0x10000000 /* Inode has inline data. */
 #define EXT4_PROJINHERIT_FL		0x20000000 /* Create with parents projid */
 #define EXT4_RESERVED_FL		0x80000000 /* reserved for ext4 lib */
 
-#define EXT4_FL_USER_VISIBLE		0x304BDFFF /* User visible flags */
+#define EXT4_FL_USER_VISIBLE		0x404BDFFF /* User visible flags */
 #define EXT4_FL_USER_MODIFIABLE		0x204380FF /* User modifiable flags */
 
 #define EXT4_FL_XFLAG_VISIBLE		(EXT4_SYNC_FL | \
@@ -1319,7 +1322,9 @@ struct ext4_super_block {
 	__le32	s_lpf_ino;		/* Location of the lost+found inode */
 	__le32	s_prj_quota_inum;	/* inode for tracking project quota */
 	__le32	s_checksum_seed;	/* crc32c(uuid) if csum_seed set */
-	__le32	s_reserved[98];		/* Padding to the end of the block */
+	__le32	s_reserved[92];	 	/* Padding to the s_sec_magic */
+	__le32	s_sec_magic;		/* flag for reserved inodes */
+	__le32	s_reserved2[5];		/* Padding to the end of the block */
 	__le32	s_checksum;		/* crc32c(superblock) */
 };
 
@@ -1423,6 +1428,9 @@ struct ext4_sb_info {
 	unsigned long s_ext_extents;
 #endif
 
+	/* Reserved inodes count */
+	s64 s_r_inodes_count;
+
 	/* for buddy allocator */
 	struct ext4_group_info ***s_group_info;
 	struct inode *s_buddy_cache;
@@ -1431,6 +1439,8 @@ struct ext4_sb_info {
 	unsigned int *s_mb_maxs;
 	unsigned int s_group_info_size;
 	unsigned int s_mb_free_pending;
+	struct list_head s_freed_data_list;     /* List of blocks to be freed
+						   after commit completed */
 
 	/* tunables */
 	unsigned long s_stripe;
@@ -1513,6 +1523,14 @@ struct ext4_sb_info {
 
 	/* Barrier between changing inodes' journal flags and writepages ops. */
 	struct percpu_rw_semaphore s_journal_flag_rwsem;
+
+	/* To gather information of fragmentation */
+	unsigned int s_sec_part_best_extents;
+	unsigned int s_sec_part_current_extents;
+	unsigned int s_sec_part_score;
+	unsigned int s_sec_defrag_writes_kb;
+	unsigned int s_sec_num_apps;
+	unsigned int s_sec_capacity_apps_kb;
 };
 
 static inline struct ext4_sb_info *EXT4_SB(struct super_block *sb)
@@ -1870,6 +1888,12 @@ static inline bool ext4_has_incompat_features(struct super_block *sb)
  */
 #define EXT4_DEF_MIN_BATCH_TIME	0
 #define EXT4_DEF_MAX_BATCH_TIME	15000 /* 15ms */
+
+/*
+ * Default reserved inode count
+ */
+#define EXT4_DEF_RESERVE_INODE 8192
+#define EXT4_SEC_DATA_MAGIC 0xBAB0CAFE /* data partition magic */
 
 /*
  * Minimum number of groups in a flexgroup before we separate out
@@ -2410,6 +2434,8 @@ extern int ext4_group_add_blocks(handle_t *handle, struct super_block *sb,
 				ext4_fsblk_t block, unsigned long count);
 extern int ext4_trim_fs(struct super_block *, struct fstrim_range *,
 				unsigned long blkdev_flags);
+extern ssize_t ext4_mb_freefrag_show(struct ext4_sb_info *sbi, char *buf);
+extern void ext4_process_freed_data(struct super_block *sb, tid_t commit_tid);
 
 /* inode.c */
 int ext4_inode_is_fast_symlink(struct inode *inode);
@@ -2684,6 +2710,14 @@ extern void ext4_group_desc_csum_set(struct super_block *sb, __u32 group,
 				     struct ext4_group_desc *gdp);
 extern int ext4_register_li_request(struct super_block *sb,
 				    ext4_group_t first_not_zeroed);
+
+/* for debugging, sangwoo2.lee */
+extern void print_iloc_info(struct super_block *sb, struct ext4_iloc iloc);
+extern void print_bh(struct super_block *sb,
+		struct buffer_head *bh, int start, int len);
+extern void print_block_data(struct super_block *sb, sector_t blocknr,
+		unsigned char *data_to_dump, int start, int len);
+/* for debugging */
 
 static inline int ext4_has_group_desc_csum(struct super_block *sb)
 {
@@ -3002,9 +3036,6 @@ extern struct buffer_head *ext4_get_first_inline_block(struct inode *inode,
 extern int ext4_inline_data_fiemap(struct inode *inode,
 				   struct fiemap_extent_info *fieinfo,
 				   int *has_inline, __u64 start, __u64 len);
-extern int ext4_try_to_evict_inline_data(handle_t *handle,
-					 struct inode *inode,
-					 int needed);
 extern void ext4_inline_data_truncate(struct inode *inode, int *has_inline);
 
 extern int ext4_convert_inline_data(struct inode *inode);
