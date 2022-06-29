@@ -21,7 +21,8 @@ source "drivers/net/wireless/admtek/Kconfig"
 source "drivers/net/wireless/ath/Kconfig"
 source "drivers/net/wireless/atmel/Kconfig"
 source "drivers/net/wireless/broadcom/Kconfig"
-source "drivers/net/wireless/bcmdhd_100_10/Kconfig"
+source "drivers/net/wireless/bcmdhd_100_15/Kconfig"
+source "drivers/net/wireless/bcmdhd_101_16/Kconfig"
 source "drivers/net/wireless/cisco/Kconfig"
 source "drivers/net/wireless/intel/Kconfig"
 source "drivers/net/wireless/intersil/Kconfig"
@@ -100,5 +101,12 @@ config USB_NET_RNDIS_WLAN
 	  only wireless RNDIS chip known to date.
 
 	  If you choose to build a module, it'll be called rndis_wlan.
+
+config VIRT_WIFI
+	tristate "Wifi wrapper for ethernet drivers"
+	depends on CFG80211
+	---help---
+	  This option adds support for ethernet connections to appear as if they
+	  are wifi connections through a special rtnetlink device.
 
 endif # WLAN
